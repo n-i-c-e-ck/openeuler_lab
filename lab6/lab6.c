@@ -1,42 +1,37 @@
-#include <stdio.h>
-#include <stdint.h>
-// 这些是内核相关的头文件，在用户空间不可用。
-#include <asm/desc_defs.h> // 用于 gdt_ptr 等 (x86 特定)
-#include <asm/segment.h> // 用于 get_desc_base, get_desc_limit
+#include <linux/module.h>    // 内核模块支持
+#include <linux/kernel.h>    // 内核空间函数和宏定义
+#include <linux/sched/task.h>// 任务调度结构体定义
 
+static int print_stack_addrs(void) {
+    struct task_struct *task = current;        // 获取当前任务结构指针
+    unsigned long user_stack_start = 0;        // 用户态堆栈起始地址
+    unsigned long kernel_stack_start = 0;      // 内核态堆栈起始地址
 
-void print_gdt(void) {
-    struct desc_ptr gdt_ptr;
-    // 这段代码具有特权，并且是体系结构相关的。
-    sgdt(&gdt_ptr);
-
-    printf("全局描述符表 (GDT) 信息:\n");
-    unsigned long limit = gdt_ptr.limit; // GDT 限制 (大小)
-    unsigned long base = gdt_ptr.address; // GDT 基地址
-
-    printf("GDT 基地址: 0x%lx\n", base);
-    printf("GDT 限制: 0x%lx\n", limit);
-
-    // 遍历 GDT 条目。需要仔细计算大小
-    for (unsigned int i = 0; i <= limit / sizeof(struct descriptor); ++i) {
-        struct descriptor *desc = (struct descriptor *)(base + i * sizeof(struct descriptor));
-
-        // 提取基地址和限制
-        unsigned long base_addr = get_desc_base(desc); // 从描述符中提取基地址的函数
-        unsigned long limit_val = get_desc_limit(desc); // 从描述符中提取限制的函数
-
-        printf("条目 %d:\n", i);
-        printf("  基地址: 0x%lx\n", base_addr);
-        printf("  段限长: 0x%lx\n", limit_val);
-        printf("\n");
+    // 如果任务有用户空间内存描述符 (mm)，则获取用户态堆栈起始地址
+    if (task->mm) {
+        user_stack_start = task->mm->start_stack;
+        pr_info("用户态堆栈起始: 0x%lx\n", user_stack_start);
+    } else {
+        // 如果没有 mm 结构，则说明是内核线程，用户态堆栈不可用
+        pr_info("用户态堆栈: 不可用 (内核线程)\n");
     }
-}
 
-int init_module(void) { // 内核模块初始化函数 (仅用于内核模块)
-    print_gdt();
+    // 获取当前任务的内核态堆栈起始地址
+    kernel_stack_start = (unsigned long)task->stack;
+    pr_info("内核态堆栈起始: 0x%lx\n", kernel_stack_start);
+
     return 0;
 }
 
-void cleanup_module(void) { // 内核模块清理函数 (仅用于内核模块)
-   // 此处无需执行任何操作
+static void cleanup(void) {
+    pr_info("模块卸载完成\n");
 }
+
+// 指定模块初始化和卸载函数
+module_init(print_stack_addrs);
+module_exit(cleanup);
+
+// 模块元数据
+MODULE_LICENSE("GPL");                         // 模块许可证为 GPL
+MODULE_DESCRIPTION("打印当前任务的用户态和内核态堆栈起始地址"); // 模块描述
+MODULE_AUTHOR("你的名字");                     // 模块作者

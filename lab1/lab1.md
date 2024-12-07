@@ -72,4 +72,5 @@ clean:
 ### （4）运行和测试
 1. 编译程序并在终端中运行，输入`make`。
 2. 测试无参数情况，终端输入`./lab1`，成功输出：
-![C3/无参数情况函数测试结果.png](/imags/C3无参数情况函数测试结果.png)
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/lab1.png)
+

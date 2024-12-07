@@ -2,7 +2,7 @@
 
 ### （1）了解openeuler源代码中关于进程部分
 1.输入`ls /proc`，查看proc目录内的文件：
-
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/4f92e619edca94eeb64b44a6f2365290.png)
 
 因此我们的任务就是解析proc目录，打印进程名称。
 ### （2）编写C语言程序代码

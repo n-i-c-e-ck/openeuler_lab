@@ -103,8 +103,8 @@ clean:
 
 #### 4. 测试用例
 
-- **正常测试**：提供一个有效的 ELF 文件作为参数，检查输出的日志文件是否包含了正确的文件头信息。
-- **异常测试**：尝试使用非 ELF 文件或不存在的文件作为参数，确保程序能够正确报告错误。
-![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/0A5190B3018DBFE175A3353B8B154A2C.png)
-![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/7540436F9B5CE6045A6A59027092BF3D.png)
+- **正常测试**：选取lab1的elf文件
+
+
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/lab3.png)
 

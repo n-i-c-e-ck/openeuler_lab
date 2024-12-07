@@ -152,4 +152,4 @@ clean:
 - 使用 `make` 命令编译程序。
 - 运行编译后的程序，可以通过命令 `./lab1` 来执行。
 
-![image](
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/lab2.png)

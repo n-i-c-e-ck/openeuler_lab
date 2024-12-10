@@ -62,7 +62,7 @@ n
 enter
 enter
 ```
-![image]()
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/AF917CCB7CEC302383859FC25F9AA41F.png)
 #### 2. 代码解析
 
 ##### 2.1 包含头文件

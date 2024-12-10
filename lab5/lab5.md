@@ -1,114 +1,100 @@
-#### 当前进程页表目录获取
+以下是针对打印全局描述符表（GDT）信息实验的 README 文档：
 
 ---
 
-#### 1. 模块概述
+# 打印全局描述符表 (GDT) 信息
 
-本内核模块旨在打印当前进程的页全局目录（PGD）条目信息。通过读取当前进程的 `task_struct` 和 `mm_struct` 结构，该模块可以获取并输出 PGD 中每个非空条目的虚拟地址。这有助于开发者和系统管理员了解当前进程的页表结构。
+### （1）了解全局描述符表 (GDT)
+1. **全局描述符表** (Global Descriptor Table, GDT) 是 x86 架构的核心数据结构之一，用于定义内存段的基地址、大小、权限等信息。
+2. **GDTR 寄存器**：GDTR 是一个专用寄存器，保存 GDT 的基地址和长度。
 
-#### 2. 使用方法
+实验的目标是通过访问 GDTR 寄存器，解析 GDT 表中的所有表项，并以用户友好的形式打印每个表项的基地址和段长。
 
-##### 2.1 编译
-
-
-```sh
-make
-```
-
-##### 2.2 加载模块
-
-编译完成后，可以通过以下命令加载模块：
-
-```sh
-sudo insmod pgd_print.ko
-```
-
-##### 2.3 查看输出
-
-模块加载后，你可以通过 `dmesg` 命令查看输出信息：
-
-```sh
-dmesg | tail
-```
-
-```plaintext
-[   60.123456] 当前进程页全局目录条目:
-[   60.123457] 页目录项 0: 0x123456789abcdef0
-[   60.123458] 页目录项 1: 0x23456789abcdef01
-...
-```
-
-##### 2.4 卸载模块
-
-完成测试后，可以通过以下命令卸载模块：
-
-```sh
-sudo rmmod pgd_print
-```
-
-模块卸载时会打印一条消息确认卸载完成：
-
-```plaintext
-[   65.123456] 模块卸载完成
-```
-
-#### 3. 代码解析
-
-##### 3.1 包含头文件
-
+### （2）编写 C 程序代码
+逐行分析如下代码：
 ```c
-#include <linux/kernel.h>      // 内核空间函数和宏定义
-#include <linux/module.h>      // 内核模块支持
-#include <linux/sched/task.h>  // 任务调度结构体定义
-#include <linux/mm_types.h>    // 内存管理结构体定义
-```
+#include <stdio.h>
+#include <stdint.h>
 
-##### 3.2 初始化函数
+// 定义 GDT 表项结构
+typedef struct {
+    uint16_t limit_low;  // 段界限低 16 位
+    uint16_t base_low;   // 基地址低 16 位
+    uint8_t  base_mid;   // 基地址中间 8 位
+    uint8_t  access;     // 访问权限字节
+    uint8_t  granularity; // 粒度与段界限高 4 位
+    uint8_t  base_high;  // 基地址高 8 位
+} __attribute__((packed)) gdt_entry_t;
 
-```c
-static int print_pgd_entries(void) {
-    struct task_struct *ts = current;
-    struct mm_struct *ms = ts->active_mm;
-    pgd_t *pgd = ms->pgd;
-    int i;
+// 定义 GDTR 寄存器结构
+typedef struct {
+    uint16_t limit;      // GDT 大小
+    uint64_t base;       // GDT 基地址
+} __attribute__((packed)) gdtr_t;
 
-    printk(KERN_INFO "当前进程页全局目录条目:\n");
-    
-    for (i = 0; i < PTRS_PER_PGD; i++) {
-        pgd_t entry = pgd[i];
-        if (pgd_val(entry)) {
-            printk(KERN_INFO "页目录项 %d: 0x%lx\n", i, pgd_val(entry));
-        }
+// 函数声明：从 GDTR 寄存器读取信息
+void load_gdtr(gdtr_t *gdtr);
+
+int main() {
+    gdtr_t gdtr;
+    load_gdtr(&gdtr); // 读取 GDTR 信息
+
+    printf("GDT Base Address: 0x%016lx\n", gdtr.base);
+    printf("GDT Limit: 0x%04x\n", gdtr.limit);
+
+    // 解析并打印 GDT 表项信息
+    gdt_entry_t *gdt_entries = (gdt_entry_t *)gdtr.base;
+    int num_entries = (gdtr.limit + 1) / sizeof(gdt_entry_t);
+
+    printf("Number of GDT Entries: %d\n", num_entries);
+    printf("GDT Entries:\n");
+    for (int i = 0; i < num_entries; i++) {
+        gdt_entry_t entry = gdt_entries[i];
+        uint32_t base = (entry.base_low | (entry.base_mid << 16) | (entry.base_high << 24));
+        uint32_t limit = (entry.limit_low | ((entry.granularity & 0x0F) << 16));
+        printf("Entry %d: Base=0x%08x, Limit=0x%05x\n", i, base, limit);
     }
 
     return 0;
 }
-```
 
-- **获取当前进程的 `task_struct` 和 `mm_struct`**：使用 `current` 宏获取当前进程的任务结构指针，并从中提取内存管理结构指针。
-- **遍历 PGD 条目**：遍历 PGD 并打印非空条目的虚拟地址。
-
-##### 3.3 清理函数
-
-```c
-static void cleanup(void) {
-    printk(KERN_INFO "模块卸载完成\n");
+// 内联汇编：读取 GDTR 寄存器
+void load_gdtr(gdtr_t *gdtr) {
+    asm volatile("sgdt %0" : "=m" (*gdtr));
 }
 ```
 
-- **打印卸载信息**：在模块卸载时打印一条确认消息。
+### （3）创建 Makefile 文档以编译程序
+1. 在 `Makefile` 中设置编译器变量 `CC` 为 `gcc`，传递给编译器的选项变量 `CFLAGS` 为 `-Wall`。
+2. 定义编译规则如下：
+```makefile
+CC=gcc
+CFLAGS=-Wall
 
-##### 3.4 模块宏定义
+all: gdt_info
 
-```c
-module_init(print_pgd_entries);
-module_exit(cleanup);
+gdt_info: gdt_info.c
+	$(CC) $(CFLAGS) gdt_info.c -o gdt_info
 
-MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("打印当前进程的页全局目录条目");
+clean:
+	rm -f gdt_info
 ```
 
-- **指定初始化和清理函数**：使用 `module_init` 和 `module_exit` 宏来指定模块的初始化和清理函数。
-- **模块元数据**：定义模块的许可证、描述等信息。
+### （4）运行和测试
+1. **编译程序**：在终端中输入 `make`。
+2. **运行程序**：以 `root` 权限运行，输入：
+   ```bash
+   sudo ./gdt_info
+   ```
+3. **输出结果**：
+   成功运行后，程序将输出 GDT 的基地址、长度以及所有表项的信息。示例输出如下：
+ 
 
+4. **清理生成文件**：
+   在终端中输入：
+   ```bash
+   make clean
+   ```
+
+---
 

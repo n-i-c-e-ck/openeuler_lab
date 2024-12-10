@@ -47,7 +47,22 @@ MBR 分区表:
   扇区数: 2097152
   大小: 1024.00 MB
 ```
+# 创建和初始化磁盘映像 (`disk.img`)
 
+## 1. 创建空白磁盘映像文件
+使用 `dd` 命令创建一个大小为 1MB 的空白磁盘映像：
+```bash
+dd if=/dev/zero of=disk.img bs=512 count=2048
+```
+###2.初始化
+```bash
+fdisk disk.img
+o
+n
+enter
+enter
+```
+![image]()
 #### 2. 代码解析
 
 ##### 2.1 包含头文件

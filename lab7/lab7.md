@@ -159,7 +159,7 @@ dmesg | tail -n 50
 [ 1093.103538] Process: sudo
 [ 1093.103538] Process: insmod
 ```
-![image]
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/lab7.png)
 #### 5. **卸载模块**
 完成后卸载模块：
 ```bash

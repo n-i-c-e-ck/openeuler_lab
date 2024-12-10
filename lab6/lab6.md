@@ -86,7 +86,7 @@ clean:
 
 3. **输出示例**：
    成功运行后，程序将输出用户态和内核态堆栈的起始地址及大小：
-  ![image]()
+  ![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/lab6.png)
 
 4. **清理生成文件**：
    在终端中运行：

@@ -88,7 +88,7 @@ clean:
    ```
 3. **输出结果**：
    成功运行后，程序将输出 GDT 的基地址、长度以及所有表项的信息。示例输出如下：
- 
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/lab5.png)
 
 4. **清理生成文件**：
    在终端中输入：

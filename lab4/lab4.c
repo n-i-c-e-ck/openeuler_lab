@@ -23,7 +23,7 @@ typedef struct {
 } partition_entry_t;
 
 
-//分区类型查找表（概念性示例，需要替换为更全面的表）
+
 const char *get_partition_type(unsigned char type) {
     switch (type) {
         case 0x00: return "空";

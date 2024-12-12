@@ -100,7 +100,7 @@ typedef struct {
 ##### 2.3 分区类型查找表
 
 ```c
-// 分区类型查找表（概念性示例，需要替换为更全面的表）
+
 const char *get_partition_type(unsigned char type) {
     switch (type) {
         case 0x00: return "空";

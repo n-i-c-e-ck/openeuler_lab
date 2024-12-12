@@ -21,7 +21,7 @@
 #include <linux/sched/signal.h>
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Your Name");
+MODULE_AUTHOR("1");
 MODULE_DESCRIPTION("A module to list all process names");
 MODULE_VERSION("1.0");
 

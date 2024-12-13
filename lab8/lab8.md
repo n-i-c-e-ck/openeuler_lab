@@ -94,11 +94,7 @@ dmesg | tail -n 20
 ```
 
 输出示例：
-```
-
-...
-```
-
+![image](https://github.com/n-i-c-e-ck/openeuler_lab/blob/main/lab8.png)
 ### **卸载模块**
 运行以下命令卸载模块：
 ```bash
